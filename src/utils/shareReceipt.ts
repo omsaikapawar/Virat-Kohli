@@ -22,6 +22,18 @@ export function formatSpentAmount(amount: number): string {
   return formatIndianCurrency(amount);
 }
 
+function dataUrlToBlob(dataUrl: string): Blob {
+  const parts = dataUrl.split(',');
+  const mime = parts[0].match(/:(.*?);/)?.[1] || 'image/png';
+  const binaryStr = atob(parts[1]);
+  const len = binaryStr.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryStr.charCodeAt(i);
+  }
+  return new Blob([bytes], { type: mime });
+}
+
 const DEFAULT_SHARE_URL = 'https://oskfun.in/virat-kohli';
 
 export const generateReceiptImage = async (totalSpent: number): Promise<GeneratedReceipt | null> => {
@@ -66,8 +78,7 @@ export const generateReceiptImage = async (totalSpent: number): Promise<Generate
       document.body.removeChild(cloneContainer);
     }
 
-    const res = await fetch(dataUrl);
-    const blob = await res.blob();
+    const blob = dataUrlToBlob(dataUrl);
 
     const shareUrl = DEFAULT_SHARE_URL;
     const spentText = formatSpentAmount(totalSpent);
@@ -106,31 +117,69 @@ export const shareReceipt = async (
 
   const fullShareMessage = `${shareText} ${shareUrl}`;
 
-  // If the browser supports native file sharing (Mobile Safari, Chrome on Android, etc.)
-  if (receipt && navigator.canShare && typeof File !== 'undefined') {
+  // Automatically open system share options
+  if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+    // 1. First Priority: Share with image file + message
+    if (receipt && receipt.blob && typeof File !== 'undefined') {
+      try {
+        const file = new File([receipt.blob], 'virat-kohli-receipt.png', { type: 'image/png' });
+        const filePayload: ShareData = {
+          title: "Spend Virat Kohli's Money | OSK Fun",
+          text: fullShareMessage,
+          files: [file],
+        };
+
+        let canShareFile = true;
+        if (typeof navigator.canShare === 'function') {
+          try {
+            canShareFile = navigator.canShare(filePayload);
+          } catch {
+            canShareFile = false;
+          }
+        }
+
+        if (canShareFile) {
+          await navigator.share(filePayload);
+          return; // Successfully opened system share with bill image & message!
+        }
+      } catch (err: any) {
+        if (err.name === 'AbortError') {
+          // User opened and dismissed system share dialog
+          return;
+        }
+        console.warn("File share failed, attempting system text share:", err);
+      }
+    }
+
+    // 2. Second Priority: System share with message & web link (if OS doesn't support file payload)
     try {
-      const file = new File([receipt.blob], 'virat-receipt.png', { type: 'image/png' });
-      const shareData = {
+      const textPayload: ShareData = {
         title: "Spend Virat Kohli's Money | OSK Fun",
         text: fullShareMessage,
         url: shareUrl,
-        files: [file],
       };
 
-      if (navigator.canShare(shareData)) {
-        await navigator.share(shareData);
-        return; // Successfully shared via native sheet with image!
+      let canShareText = true;
+      if (typeof navigator.canShare === 'function') {
+        try {
+          canShareText = navigator.canShare(textPayload);
+        } catch {
+          canShareText = true;
+        }
+      }
+
+      if (canShareText) {
+        await navigator.share(textPayload);
+        return; // Successfully opened system share!
       }
     } catch (err: any) {
       if (err.name === 'AbortError') {
-        // User intentionally cancelled the native share sheet
         return;
       }
-      console.warn("Native file share failed, falling back to share modal:", err);
+      console.warn("System text share failed:", err);
     }
   }
 
-  // On desktop browsers (like Chrome on Windows) or where file sharing is unsupported,
-  // open the share modal directly with WhatsApp, X, Telegram, and Copy options.
+  // 3. Fallback: Only for browsers with no system share support at all (e.g. desktop Firefox)
   onOpenModal(fallbackReceipt);
 };
