@@ -1,4 +1,5 @@
 import * as htmlToImage from 'html-to-image';
+import { formatIndianCurrency } from './currency';
 
 export interface GeneratedReceipt {
   dataUrl: string;
@@ -7,7 +8,23 @@ export interface GeneratedReceipt {
   shareUrl: string;
 }
 
-export const generateReceiptImage = async (): Promise<GeneratedReceipt | null> => {
+export function formatSpentAmount(amount: number): string {
+  if (amount >= 10000000) {
+    const cr = amount / 10000000;
+    const crStr = cr >= 100 ? Math.round(cr).toLocaleString('en-IN') : parseFloat(cr.toFixed(2)).toLocaleString('en-IN');
+    return `₹${crStr} Crore`;
+  }
+  if (amount >= 100000) {
+    const l = amount / 100000;
+    const lStr = parseFloat(l.toFixed(2)).toLocaleString('en-IN');
+    return `₹${lStr} Lakh`;
+  }
+  return formatIndianCurrency(amount);
+}
+
+const DEFAULT_SHARE_URL = 'https://oskfun.in/virat-kohli';
+
+export const generateReceiptImage = async (totalSpent: number): Promise<GeneratedReceipt | null> => {
   const originalEl = document.getElementById('receipt-capture');
   if (!originalEl) {
     return null;
@@ -25,7 +42,7 @@ export const generateReceiptImage = async (): Promise<GeneratedReceipt | null> =
 
   // Clone the receipt
   const clonedEl = originalEl.cloneNode(true) as HTMLElement;
-  clonedEl.style.margin = '0'; // Remove mx-auto which causes the shift
+  clonedEl.style.margin = '0';
   clonedEl.style.boxShadow = 'none';
 
   // Remove the barcode from the clone if it exists to prevent SVG rendering quirks
@@ -51,8 +68,9 @@ export const generateReceiptImage = async (): Promise<GeneratedReceipt | null> =
     const res = await fetch(dataUrl);
     const blob = await res.blob();
 
-    const shareUrl = window.location.origin;
-    const shareText = "Try OSK Fun Virat! I just blew the entire fortune.";
+    const shareUrl = DEFAULT_SHARE_URL;
+    const spentText = formatSpentAmount(totalSpent);
+    const shareText = `I spent ${spentText} on Virat Kohli in this game. You can spend your Virat Kohli money here:`;
 
     return {
       dataUrl,
@@ -70,11 +88,13 @@ export const generateReceiptImage = async (): Promise<GeneratedReceipt | null> =
 };
 
 export const shareReceipt = async (
+  totalSpent: number,
   onOpenModal: (receipt: GeneratedReceipt) => void
 ): Promise<void> => {
-  const receipt = await generateReceiptImage();
-  const shareUrl = window.location.origin;
-  const shareText = "Try OSK Fun Virat! I just blew the entire fortune.";
+  const receipt = await generateReceiptImage(totalSpent);
+  const shareUrl = DEFAULT_SHARE_URL;
+  const spentText = formatSpentAmount(totalSpent);
+  const shareText = `I spent ${spentText} on Virat Kohli in this game. You can spend your Virat Kohli money here:`;
 
   const fallbackReceipt: GeneratedReceipt = receipt || {
     dataUrl: '',
@@ -83,13 +103,15 @@ export const shareReceipt = async (
     shareUrl,
   };
 
+  const fullShareMessage = `${shareText} ${shareUrl}`;
+
   // If the browser supports native file sharing (Mobile Safari, Chrome on Android, etc.)
   if (receipt && navigator.canShare && typeof File !== 'undefined') {
     try {
       const file = new File([receipt.blob], 'virat-receipt.png', { type: 'image/png' });
       const shareData = {
         title: "Spend Virat Kohli's Money | OSK Fun",
-        text: `${shareText} Check it out: ${shareUrl}`,
+        text: fullShareMessage,
         url: shareUrl,
         files: [file],
       };

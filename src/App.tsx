@@ -38,9 +38,11 @@ function App() {
     buyItem(productId, price, maxQty);
   }, [buyItem]);
 
+  const totalSpent = totalMoney - moneyLeft;
+
   const handleShare = async () => {
     setIsSharing(true);
-    await shareReceipt((receipt) => {
+    await shareReceipt(totalSpent, (receipt) => {
       setActiveReceipt(receipt);
       setIsShareModalOpen(true);
     });

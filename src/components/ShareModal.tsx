@@ -12,7 +12,7 @@ export default function ShareModal({ isOpen, onClose, receipt }: ShareModalProps
 
   if (!isOpen || !receipt) return null;
 
-  const fullShareMessage = `${receipt.shareText} Check it out: ${receipt.shareUrl}`;
+  const fullShareMessage = `${receipt.shareText} ${receipt.shareUrl}`;
 
   const handleWhatsApp = () => {
     const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(fullShareMessage)}`;
