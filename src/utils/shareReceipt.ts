@@ -59,6 +59,7 @@ export const generateReceiptImage = async (totalSpent: number): Promise<Generate
       quality: 1.0,
       backgroundColor: '#fffcf5',
       pixelRatio: 2,
+      skipFonts: true,
     });
 
     if (document.body.contains(cloneContainer)) {
