@@ -5,7 +5,9 @@ import { useNetWorth } from './hooks/useNetWorth';
 import ProductGrid from './components/ProductGrid';
 import Receipt from './components/Receipt';
 import ZeroScreen from './components/ZeroScreen';
-import { shareReceiptAsImage } from './utils/shareReceipt';
+import ShareModal from './components/ShareModal';
+import { shareReceipt } from './utils/shareReceipt';
+import type { GeneratedReceipt } from './utils/shareReceipt';
 
 function App() {
   const { netWorth } = useNetWorth();
@@ -23,6 +25,8 @@ function App() {
   } = useSpendingStore();
 
   const [isSharing, setIsSharing] = useState(false);
+  const [activeReceipt, setActiveReceipt] = useState<GeneratedReceipt | null>(null);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   useEffect(() => {
     if (netWorth > 0) {
@@ -36,7 +40,10 @@ function App() {
 
   const handleShare = async () => {
     setIsSharing(true);
-    await shareReceiptAsImage();
+    await shareReceipt((receipt) => {
+      setActiveReceipt(receipt);
+      setIsShareModalOpen(true);
+    });
     setIsSharing(false);
   };
 
@@ -108,6 +115,7 @@ function App() {
         </button>
       </div>
 
+      {/* Zero Balance Game Over Modal */}
       <ZeroScreen
         isOpen={showZeroScreen}
         totalMoney={totalMoney}
@@ -126,6 +134,13 @@ function App() {
           setShowZeroScreen(false);
           handleShare();
         }}
+      />
+
+      {/* Universal Share Modal */}
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        receipt={activeReceipt}
       />
     </div>
   );
