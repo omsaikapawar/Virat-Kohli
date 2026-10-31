@@ -17,10 +17,27 @@ export default function Header({ moneyLeft, totalMoney, onReceiptClick, onResetC
       {/* Desktop header */}
       <header className="hidden md:block sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-border shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <a
+            href="/"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/80 bg-white/70 hover:bg-white hover:border-border transition-all duration-150 shadow-2xs group"
+            title="Back to OSK Fun Home"
+            aria-label="Back to OSK Fun Home"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-3.5 h-3.5 text-text-muted group-hover:text-text-primary transition-colors"
+              aria-hidden="true"
+            >
+              <path d="m15 18-6-6 6-6"/>
+            </svg>
             <span className="text-2xl">🏏</span>
-            <span className="font-bold text-lg text-text-primary">OSK Fun</span>
-          </div>
+            <span className="font-bold text-lg text-text-primary group-hover:text-primary transition-colors">OSK Fun</span>
+          </a>
 
           <div className="flex items-center gap-6">
             <div className="text-right">
@@ -58,10 +75,27 @@ export default function Header({ moneyLeft, totalMoney, onReceiptClick, onResetC
       {/* Mobile sticky header */}
       <header className="md:hidden sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-border shadow-sm">
         <div className="px-4 py-2 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <a
+            href="/"
+            className="flex items-center gap-1.5 px-2 py-1 rounded-md border border-border/80 bg-white/70 hover:bg-white transition-all group"
+            title="Back to OSK Fun Home"
+            aria-label="Back to OSK Fun Home"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-3 h-3 text-text-muted"
+              aria-hidden="true"
+            >
+              <path d="m15 18-6-6 6-6"/>
+            </svg>
             <span className="text-xl">🏏</span>
             <span className="font-bold text-sm text-text-primary">OSK Fun</span>
-          </div>
+          </a>
 
           <div className={`font-bold text-base tabular-nums ${moneyLeft === 0 ? 'text-money-red' : 'text-money-green'}`}>
             {formatShortCurrency(moneyLeft)}
