@@ -56,7 +56,18 @@ function App() {
       {/* Top Navbar */}
       <nav className="bg-white py-6 px-4 mb-8 shadow-[0_2px_15px_rgba(0,0,0,0.03)]">
         <div className="max-w-[1100px] mx-auto flex justify-start">
-          <img src="/osk-fun back.svg" alt="OSK Fun" className="h-12 hover:opacity-80 transition-opacity cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
+          <a
+            href="/"
+            className="inline-flex items-center hover:opacity-80 transition-opacity"
+            title="Back to OSK Fun Home"
+            aria-label="Back to OSK Fun Home"
+            onClick={(e) => {
+              e.preventDefault();
+              window.location.href = '/';
+            }}
+          >
+            <img src="/osk-fun back.svg" alt="OSK Fun" className="h-12 cursor-pointer" />
+          </a>
         </div>
       </nav>
 
@@ -108,13 +119,18 @@ function App() {
 
       {/* Large Bottom SVG Logo Button */}
       <div className="mt-8 pb-8 flex justify-center w-full">
-        <button 
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        <a 
+          href="/"
           className="hover:scale-105 hover:opacity-80 transition-all duration-300"
-          title="Back to Top"
+          title="Back to OSK Fun Home"
+          aria-label="Back to OSK Fun Home"
+          onClick={(e) => {
+            e.preventDefault();
+            window.location.href = '/';
+          }}
         >
-          <img src="/osk-fun back.svg" alt="OSK Fun" className="h-10 md:h-12 opacity-80 hover:opacity-100" />
-        </button>
+          <img src="/osk-fun back.svg" alt="OSK Fun" className="h-10 md:h-12 opacity-80 hover:opacity-100 cursor-pointer" />
+        </a>
       </div>
 
       {/* Zero Balance Game Over Modal */}
